@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -58,6 +59,7 @@ class VehicleEntryView(APIView):
         serializer = VehicleEntrySerializer(data, many=True)
         return Response(serializer.data)
 
+    @csrf_exempt
     def post(self, request):
         plate_number = request.data.get('plate_number')
 
@@ -66,6 +68,7 @@ class VehicleEntryView(APIView):
             owner = Owner.objects.get(vehicle__plate_number=plate_number)
 
             new_entry = VehicleEntry.objects.create(owner=owner)
+            new_entry.save()
 
         except Owner.DoesNotExist:
             new_entry = None
@@ -73,6 +76,15 @@ class VehicleEntryView(APIView):
         serializer = VehicleEntrySerializer(new_entry, many=False)
 
         return Response(serializer.data)
+
+class VehicleDetail(APIView):
+    def get(self, request, plate_number):
+
+        data = Vehicles.objects.filter(plate_number=plate_number)
+        serializer = VehicleSerializer(data, many=True)
+
+        return Response(serializer.data)
+
 
 def get_stats(request):
     total_hot_vehicles = VehicleEntry.objects.filter(~Q(owner__vehicle__status=Vehicle.status_choices.CL)).count()
