@@ -56,5 +56,5 @@ class Owner(models.Model):
         return "{} {}".format(self.person.first_name, self.person.last_name)
 
 class VehicleEntry(models.Model):
-    time_entry = models.DateTimeField(default=datetime.now())
+    time_entry = models.DateTimeField(default=datetime.now)
     owner = models.ForeignKey(Owner, on_delete=models.CASCADE)

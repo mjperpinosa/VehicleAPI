@@ -54,12 +54,18 @@ class VehicleEntryCodingViolation(APIView):
 
 class VehicleEntryView(APIView):
     def get(self, request):
-        data = VehicleEntry.objects.all().order_by('-time_entry')
+        status = request.query_params.get('status', None)
+        if status is not None:
+            data = VehicleEntry.objects.filter(owner__vehicle__status=status)
+        else:
+            data = VehicleEntry.objects.all().order_by('-time_entry')
+
         serializer = VehicleEntrySerializer(data, many=True)
         return Response(serializer.data)
 
     def post(self, request):
         plate_number = request.data.get('plate_number')
+        print("PLATE NUMBER - " + str(plate_number))
 
         try:
             # vehicle = Vehicle.objects.get(vehicle__plate_number=plate_number)
